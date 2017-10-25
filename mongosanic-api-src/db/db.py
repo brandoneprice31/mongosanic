@@ -15,25 +15,13 @@ class DB:
     def insertUser(self, user):
         user = {
             'first_name': user['first_name'],
-            'last_name': user['last_name'],
-            'fb_token': user['fb_token'],
-            'easy_highscores': [],
-            'hard_highscores': []
+            'last_name': user['last_name']
         }
 
         return self.deserialize(self.db['users'].insert(user))
 
-    def findUserByFbToken(self, fbToken):
-        return self.deserialize(self.db['users'].find_one({ 'fb_token': fbToken }))
-
     def findUserById(self, userId):
         return self.deserialize(self.db['users'].find_one({ '_id': ObjectId(userId) }))
-
-    def updateHighScores(self, userId, easyHS, hardHS):
-        return self.db['users'].update_one({ '_id' : ObjectId(userId) }, { '$set': { 'easy_highscores': easyHS, 'hard_highscores': hardHS } } )
-
-    def getAllUsersByFBTokens(self, fbTokens):
-        return self.deserialize(list(self.db['users'].find({ 'fb_token': { '$in' : fbTokens } })))
 
     # Helpers
 
