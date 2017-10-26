@@ -71,3 +71,49 @@ void copy_everything(char* src_dir_name, char* dest_dir_name) {
 
     closedir(src_dir);
 }
+
+void replace_tildas(char* name) {
+    // Replace valid ~~name~~ with name
+    int tilda_1;
+    int tilda_2;
+    int tilda_3;
+    int tilda_4;
+    for (int i=0; i<tilda_marker_pos-3; i++) {
+        if  ((strcmp(tilda_marker_arr[i].filepath, tilda_marker_arr[i+1].filepath)) ||
+            (strcmp(tilda_marker_arr[i+1].filepath, tilda_marker_arr[i+2].filepath)) ||
+            (strcmp(tilda_marker_arr[i+2].filepath, tilda_marker_arr[i+3].filepath)))
+            continue;
+
+        tilda_1 = tilda_marker_arr[i].tilda_pos;
+        tilda_2 = tilda_marker_arr[i+1].tilda_pos;
+        tilda_3 = tilda_marker_arr[i+2].tilda_pos;
+        tilda_4 = tilda_marker_arr[i+3].tilda_pos;
+        if ((tilda_1+1 != tilda_2) || (tilda_3+1 != tilda_4)) {
+            continue;
+        }
+
+        FILE* tilda_file = fopen(tilda_marker_arr[i].filepath, "r");
+        fseek(tilda_file, 0L, SEEK_END);
+        size_t file_sz = ftell(tilda_file);
+        rewind(tilda_file);
+
+        char buf[file_sz];
+        fread(buf, 1, file_sz, tilda_file);
+        fclose(tilda_file);
+        remove(tilda_marker_arr[i].filepath);
+
+        tilda_file = fopen(tilda_marker_arr[i].filepath, "w");
+        fwrite(buf, 1, tilda_1, tilda_file);
+        fwrite(name, 1, strlen(name), tilda_file);
+        fwrite(&buf[tilda_4+1], 1, file_sz - tilda_4-1, tilda_file);
+
+        for (int j=i+1; j<tilda_marker_pos; j++) {
+            if (!strcmp(tilda_marker_arr[i].filepath, tilda_marker_arr[j].filepath)) {
+                tilda_marker_arr[j].tilda_pos -= (tilda_4 - tilda_1 + 1) - strlen(name);
+            }
+        }
+
+        i+=3;
+        fclose(tilda_file);
+    }
+}
