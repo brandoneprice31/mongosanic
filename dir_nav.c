@@ -78,7 +78,10 @@ void replace_tildas(char* name) {
     int tilda_2;
     int tilda_3;
     int tilda_4;
+
+    // Iterate over every tilda.
     for (int i=0; i<tilda_marker_pos-3; i++) {
+        // If this set of four tilda's don't come from the same file then goto next.
         if  ((strcmp(tilda_marker_arr[i].filepath, tilda_marker_arr[i+1].filepath)) ||
             (strcmp(tilda_marker_arr[i+1].filepath, tilda_marker_arr[i+2].filepath)) ||
             (strcmp(tilda_marker_arr[i+2].filepath, tilda_marker_arr[i+3].filepath)))
@@ -88,31 +91,39 @@ void replace_tildas(char* name) {
         tilda_2 = tilda_marker_arr[i+1].tilda_pos;
         tilda_3 = tilda_marker_arr[i+2].tilda_pos;
         tilda_4 = tilda_marker_arr[i+3].tilda_pos;
+
+        // Ensure that this is a valid tilda posititoning.
         if ((tilda_1+1 != tilda_2) || (tilda_3+1 != tilda_4)) {
             continue;
         }
 
+        // Open the copied file and get it's size.
         FILE* tilda_file = fopen(tilda_marker_arr[i].filepath, "r");
         fseek(tilda_file, 0L, SEEK_END);
         size_t file_sz = ftell(tilda_file);
         rewind(tilda_file);
 
+        // Read file into buffer and then delete it.
         char buf[file_sz];
         fread(buf, 1, file_sz, tilda_file);
         fclose(tilda_file);
         remove(tilda_marker_arr[i].filepath);
 
+        // Open new file with same name and copy everything except for the ~'s
+        // and add the new name.
         tilda_file = fopen(tilda_marker_arr[i].filepath, "w");
         fwrite(buf, 1, tilda_1, tilda_file);
         fwrite(name, 1, strlen(name), tilda_file);
         fwrite(&buf[tilda_4+1], 1, file_sz - tilda_4-1, tilda_file);
 
+        // Shift the stored tilda positions to account for the new file.
         for (int j=i+1; j<tilda_marker_pos; j++) {
             if (!strcmp(tilda_marker_arr[i].filepath, tilda_marker_arr[j].filepath)) {
                 tilda_marker_arr[j].tilda_pos -= (tilda_4 - tilda_1 + 1) - strlen(name);
             }
         }
 
+        // Goto set of next four and close the file.
         i+=3;
         fclose(tilda_file);
     }
