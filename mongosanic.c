@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <libgen.h>
 #include "dir_nav.h"
 
 int main(int argc, char *argv[]){
@@ -21,9 +22,12 @@ int main(int argc, char *argv[]){
     }
     mkdir(directory, 0700);
 
-    // Iterate over all files in mongosanic-api-src
-    tilda_marker_pos = 0;
-    copy_everything("/Users/brandonprice/projects/mongosanic/mongosanic-api-src", directory);
+    // Get path to mongosanic-api-src
+    char src_path[1024];
+    sprintf(src_path, "%s/mongosanic-api-src", dirname(argv[0]));
 
+    copy_everything(src_path, directory);
     replace_tildas(argv[1]);
+
+    printf("Created %s mongo-sanic api.\n", argv[1]);
 }
