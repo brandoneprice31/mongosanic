@@ -1,3 +1,4 @@
 *.o
 mongosanic
 out/
+mongosanic-api-src.zip
